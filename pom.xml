@@ -74,6 +74,16 @@
         </plugins>
     </build>
 
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-plugin-plugin</artifactId>
+                <version>3.2</version>
+            </plugin>
+        </plugins>
+    </reporting>
+
     <issueManagement>
         <system>GitHub</system>
         <url>https://github.com/gehel/sitespeed-maven-plugin/issues</url>
