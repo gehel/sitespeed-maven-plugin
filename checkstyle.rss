@@ -3,19 +3,19 @@
 <rss version="0.91">
   <channel>
     <title>SiteSpeed.io Maven plugin - Checkstyle report</title>
-    <link>http://gehel.github.com/ledcom-parent-pom/sitespeed-maven-plugin</link>
+    <link>http://gehel.github.com/sitespeed-maven-plugin/</link>
     <description>SiteSpeed.io Maven plugin - Checkstyle report</description>
     <language>en-us</language>
-    <copyright>&#169;2012 - 2013 LedCom</copyright>
+    <copyright>&#169;2013 LedCom</copyright>
     <item>
       <title>File: 1,
              Errors: 8,
              Warnings: 0,
              Infos: 0
       </title>
-            <link>http://gehel.github.com/ledcom-parent-pom/sitespeed-maven-plugin/checkstyle.html</link>
+            <link>http://gehel.github.com/sitespeed-maven-plugin//checkstyle.html</link>
       <description>
-        <p>Click <a href="http://gehel.github.com/ledcom-parent-pom/sitespeed-maven-plugin/checkstyle.html">here</a> for the full Checkstyle report.</p>
+        <p>Click <a href="http://gehel.github.com/sitespeed-maven-plugin//checkstyle.html">here</a> for the full Checkstyle report.</p>
 
         <table summary="Files" boder="1">
           <thead>
@@ -29,7 +29,7 @@
           <tbody>
                           <tr>
                 <td>
-                  <a href="http://gehel.github.com/ledcom-parent-pom/sitespeed-maven-plugin/checkstyle.html#ch.ledcom.maven.sitespeed.SiteSpeedMojo.java">ch/ledcom/maven/sitespeed/SiteSpeedMojo.java</a>
+                  <a href="http://gehel.github.com/sitespeed-maven-plugin//checkstyle.html#ch.ledcom.maven.sitespeed.SiteSpeedMojo.java">ch/ledcom/maven/sitespeed/SiteSpeedMojo.java</a>
                 </td>
                 <td>
                   0
