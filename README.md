@@ -1,4 +1,4 @@
 sitespeed-maven-plugin
 ======================
 
-Maven plugin for SiteSpeed.io
+Documentation at http://gehel.github.com/sitespeed-maven-plugin/
