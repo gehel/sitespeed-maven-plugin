@@ -72,6 +72,7 @@ public class SiteSpeedMojo extends AbstractMojo {
         getLog().info("url=[" + url.toExternalForm() + "]");
         getLog().info("outputDir=[" + outputDir + "]");
         BufferedReader reader = null;
+        boolean threw = true;
         try {
             ProcessBuilder pb = new ProcessBuilder(constructCmdarray());
             pb.directory(siteSpeedPath);
@@ -86,6 +87,7 @@ public class SiteSpeedMojo extends AbstractMojo {
                 getLog().info(line);
             }
             p.waitFor();
+            threw = false;
         } catch (IOException ioe) {
             throw new MojoExecutionException(
                     "IOException when generating report", ioe);
@@ -93,7 +95,12 @@ public class SiteSpeedMojo extends AbstractMojo {
             throw new MojoExecutionException(
                     "InterruptedException when generating report", ie);
         } finally {
-            Closeables.closeQuietly(reader);
+            try {
+                Closeables.close(reader, threw);
+            } catch (IOException ioe) {
+                throw new MojoExecutionException(
+                        "IOException when closing process input stream", ioe);
+            }
         }
     }
 
