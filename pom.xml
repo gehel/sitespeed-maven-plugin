@@ -12,6 +12,9 @@
     <packaging>maven-plugin</packaging>
 
     <name>SiteSpeed.io Maven plugin</name>
+    <description>Simple plugin to run SiteSpeed.io</description>
+    <url>http://gehel.github.com/sitespeed-maven-plugin/</url>
+    <inceptionYear>2013</inceptionYear>
 
     <dependencies>
         <dependency>
