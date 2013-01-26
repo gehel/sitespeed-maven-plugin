@@ -91,7 +91,7 @@ wrapper around the sitespeed.io bash script.</div>
             <td><b><a href="#siteSpeedPath">siteSpeedPath</a></b></td>
             <td><tt>File</tt></td>
             <td><tt>-</tt></td>
-            <td>Path to the SiteSpeed.io directory.<br /><b>User property is</b>: <tt>siteSpeed.siteSpeePath</tt>.</td>
+            <td>Path to the SiteSpeed.io directory.<br /><b>User property is</b>: <tt>siteSpeed.siteSpeedPath</tt>.</td>
           </tr>
           <tr class="b">
             <td><b><a href="#url">url</a></b></td>
@@ -110,39 +110,193 @@ wrapper around the sitespeed.io bash script.</div>
             <th>Description</th>
           </tr>
           <tr class="b">
+            <td><b><a href="#crawlDepth">crawlDepth</a></b></td>
+            <td><tt>int</tt></td>
+            <td><tt>-</tt></td>
+            <td>Crawl depth, default is 1.<br /><b>Default value is</b>: <tt>1</tt>.<br /><b>User property is</b>: <tt>siteSpeed.crawlDepth</tt>.</td>
+          </tr>
+          <tr class="a">
+            <td><b><a href="#maxHeap">maxHeap</a></b></td>
+            <td><tt>int</tt></td>
+            <td><tt>-</tt></td>
+            <td>The memory heap size for the java applications.<br /><b>Default value is</b>: <tt>1024</tt>.<br /><b>User property is</b>: <tt>siteSpeed.maxHeap</tt>.</td>
+          </tr>
+          <tr class="b">
+            <td><b><a href="#nbProcesses">nbProcesses</a></b></td>
+            <td><tt>int</tt></td>
+            <td><tt>-</tt></td>
+            <td>The number of processes that will analyze pages.<br /><b>Default value is</b>: <tt>5</tt>.<br /><b>User property is</b>: <tt>siteSpeed.nbProcesses</tt>.</td>
+          </tr>
+          <tr class="a">
             <td><b><a href="#outputDir">outputDir</a></b></td>
             <td><tt>File</tt></td>
             <td><tt>-</tt></td>
-            <td>The result base directory.<br /><b>Default value is</b>: <tt>target/sitespeed-result</tt>.<br /><b>User property is</b>: <tt>siteSpeed.outputDir</tt>.</td>
+            <td>The result base directory.<br /><b>Default value is</b>: <tt>${project.build.directory}/sitespeed-result</tt>.<br /><b>User property is</b>: <tt>siteSpeed.outputDir</tt>.</td>
+          </tr>
+          <tr class="b">
+            <td><b><a href="#outputFormat">outputFormat</a></b></td>
+            <td><tt>String</tt></td>
+            <td><tt>-</tt></td>
+            <td>The output format, always output as html but you can add images
+(img).<br /><b>User property is</b>: <tt>siteSpeed.outputFormat</tt>.</td>
+          </tr>
+          <tr class="a">
+            <td><b><a href="#proxy">proxy</a></b></td>
+            <td><tt>String</tt></td>
+            <td><tt>-</tt></td>
+            <td>The proxy host &amp; protocol: proxy.soulgalore.com:80.<br /><b>User property is</b>: <tt>siteSpeed.proxy</tt>.</td>
+          </tr>
+          <tr class="b">
+            <td><b><a href="#proxyType">proxyType</a></b></td>
+            <td><tt>String</tt></td>
+            <td><tt>-</tt></td>
+            <td>The proxy type.<br /><b>Default value is</b>: <tt>http</tt>.<br /><b>User property is</b>: <tt>siteSpeed.proxyType</tt>.</td>
+          </tr>
+          <tr class="a">
+            <td><b><a href="#rulesetVersion">rulesetVersion</a></b></td>
+            <td><tt>String</tt></td>
+            <td><tt>-</tt></td>
+            <td>Which ruleset to use, default is the latest sitespeed.io version.<br /><b>User property is</b>: <tt>siteSpeed.rulesetVersion</tt>.</td>
+          </tr>
+          <tr class="b">
+            <td><b><a href="#skipUrls">skipUrls</a></b></td>
+            <td><tt>String</tt></td>
+            <td><tt>-</tt></td>
+            <td>Skip urls that contains this in the path.<br /><b>User property is</b>: <tt>siteSpeed.skipUrls</tt>.</td>
+          </tr>
+          <tr class="a">
+            <td><b><a href="#userAgent">userAgent</a></b></td>
+            <td><tt>String</tt></td>
+            <td><tt>-</tt></td>
+            <td>The user agent.<br /><b>Default value is</b>: <tt>Mozilla/6.0</tt>.<br /><b>User property is</b>: <tt>siteSpeed.userAgent</tt>.</td>
+          </tr>
+          <tr class="b">
+            <td><b><a href="#viewport">viewport</a></b></td>
+            <td><tt>String</tt></td>
+            <td><tt>-</tt></td>
+            <td>The view port, the page viewport size WidthxHeight, like 400x300.<br /><b>Default value is</b>: <tt>1280x800</tt>.<br /><b>User property is</b>: <tt>siteSpeed.viewPort</tt>.</td>
+          </tr>
+          <tr class="a">
+            <td><b><a href="#yslowFile">yslowFile</a></b></td>
+            <td><tt>String</tt></td>
+            <td><tt>-</tt></td>
+            <td>The compiled yslow file.<br /><b>Default value is</b>: <tt>dependencies/yslow-3.1.4-sitespeed.js</tt>.<br /><b>User property is</b>: <tt>siteSpeed.yslowFile</tt>.</td>
+          </tr>
+          <tr class="b">
+            <td><b><a href="#zip">zip</a></b></td>
+            <td><tt>boolean</tt></td>
+            <td><tt>-</tt></td>
+            <td>Create a tar zip file of the result files.<br /><b>Default value is</b>: <tt>false</tt>.<br /><b>User property is</b>: <tt>siteSpeed.zip</tt>.</td>
           </tr>
         </table>
       </div>
       <div class="section"><h3>Parameter Details<a name="Parameter_Details"></a></h3>
-        <p><b><a name="outputDir">outputDir</a>:</b></p>
+        <p><b><a name="crawlDepth">crawlDepth</a>:</b></p>
+        <div>Crawl depth, default is 1.</div>
+        <ul>
+          <li><b>Type</b>: <tt>int</tt></li>
+          <li><b>Required</b>: <tt>No</tt></li>
+          <li><b>User Property</b>: <tt>siteSpeed.crawlDepth</tt></li>
+          <li><b>Default</b>: <tt>1</tt></li>
+        </ul><hr /><p><b><a name="maxHeap">maxHeap</a>:</b></p>
+        <div>The memory heap size for the java applications.</div>
+        <ul>
+          <li><b>Type</b>: <tt>int</tt></li>
+          <li><b>Required</b>: <tt>No</tt></li>
+          <li><b>User Property</b>: <tt>siteSpeed.maxHeap</tt></li>
+          <li><b>Default</b>: <tt>1024</tt></li>
+        </ul><hr /><p><b><a name="nbProcesses">nbProcesses</a>:</b></p>
+        <div>The number of processes that will analyze pages.</div>
+        <ul>
+          <li><b>Type</b>: <tt>int</tt></li>
+          <li><b>Required</b>: <tt>No</tt></li>
+          <li><b>User Property</b>: <tt>siteSpeed.nbProcesses</tt></li>
+          <li><b>Default</b>: <tt>5</tt></li>
+        </ul><hr /><p><b><a name="outputDir">outputDir</a>:</b></p>
         <div>The result base directory.</div>
         <ul>
           <li><b>Type</b>: <tt>java.io.File</tt></li>
           <li><b>Required</b>: <tt>No</tt></li>
           <li><b>User Property</b>: <tt>siteSpeed.outputDir</tt></li>
-          <li><b>Default</b>: <tt>target/sitespeed-result</tt></li>
+          <li><b>Default</b>: <tt>${project.build.directory}/sitespeed-result</tt></li>
+        </ul><hr /><p><b><a name="outputFormat">outputFormat</a>:</b></p>
+        <div>The output format, always output as html but you can add images
+(img).</div>
+        <ul>
+          <li><b>Type</b>: <tt>java.lang.String</tt></li>
+          <li><b>Required</b>: <tt>No</tt></li>
+          <li><b>User Property</b>: <tt>siteSpeed.outputFormat</tt></li>
         </ul><hr /><p><b><a name="phantomJSPath">phantomJSPath</a>:</b></p>
         <div>Path to the PhantomJS directory.</div>
         <ul>
           <li><b>Type</b>: <tt>java.io.File</tt></li>
           <li><b>Required</b>: <tt>Yes</tt></li>
           <li><b>User Property</b>: <tt>siteSpeed.phantomJSPath</tt></li>
+        </ul><hr /><p><b><a name="proxy">proxy</a>:</b></p>
+        <div>The proxy host &amp; protocol: proxy.soulgalore.com:80.</div>
+        <ul>
+          <li><b>Type</b>: <tt>java.lang.String</tt></li>
+          <li><b>Required</b>: <tt>No</tt></li>
+          <li><b>User Property</b>: <tt>siteSpeed.proxy</tt></li>
+        </ul><hr /><p><b><a name="proxyType">proxyType</a>:</b></p>
+        <div>The proxy type.</div>
+        <ul>
+          <li><b>Type</b>: <tt>java.lang.String</tt></li>
+          <li><b>Required</b>: <tt>No</tt></li>
+          <li><b>User Property</b>: <tt>siteSpeed.proxyType</tt></li>
+          <li><b>Default</b>: <tt>http</tt></li>
+        </ul><hr /><p><b><a name="rulesetVersion">rulesetVersion</a>:</b></p>
+        <div>Which ruleset to use, default is the latest sitespeed.io version.</div>
+        <ul>
+          <li><b>Type</b>: <tt>java.lang.String</tt></li>
+          <li><b>Required</b>: <tt>No</tt></li>
+          <li><b>User Property</b>: <tt>siteSpeed.rulesetVersion</tt></li>
         </ul><hr /><p><b><a name="siteSpeedPath">siteSpeedPath</a>:</b></p>
         <div>Path to the SiteSpeed.io directory.</div>
         <ul>
           <li><b>Type</b>: <tt>java.io.File</tt></li>
           <li><b>Required</b>: <tt>Yes</tt></li>
-          <li><b>User Property</b>: <tt>siteSpeed.siteSpeePath</tt></li>
+          <li><b>User Property</b>: <tt>siteSpeed.siteSpeedPath</tt></li>
+        </ul><hr /><p><b><a name="skipUrls">skipUrls</a>:</b></p>
+        <div>Skip urls that contains this in the path.</div>
+        <ul>
+          <li><b>Type</b>: <tt>java.lang.String</tt></li>
+          <li><b>Required</b>: <tt>No</tt></li>
+          <li><b>User Property</b>: <tt>siteSpeed.skipUrls</tt></li>
         </ul><hr /><p><b><a name="url">url</a>:</b></p>
         <div>The start url for the test.</div>
         <ul>
           <li><b>Type</b>: <tt>java.net.URL</tt></li>
           <li><b>Required</b>: <tt>Yes</tt></li>
           <li><b>User Property</b>: <tt>siteSpeed.url</tt></li>
+        </ul><hr /><p><b><a name="userAgent">userAgent</a>:</b></p>
+        <div>The user agent.</div>
+        <ul>
+          <li><b>Type</b>: <tt>java.lang.String</tt></li>
+          <li><b>Required</b>: <tt>No</tt></li>
+          <li><b>User Property</b>: <tt>siteSpeed.userAgent</tt></li>
+          <li><b>Default</b>: <tt>Mozilla/6.0</tt></li>
+        </ul><hr /><p><b><a name="viewport">viewport</a>:</b></p>
+        <div>The view port, the page viewport size WidthxHeight, like 400x300.</div>
+        <ul>
+          <li><b>Type</b>: <tt>java.lang.String</tt></li>
+          <li><b>Required</b>: <tt>No</tt></li>
+          <li><b>User Property</b>: <tt>siteSpeed.viewPort</tt></li>
+          <li><b>Default</b>: <tt>1280x800</tt></li>
+        </ul><hr /><p><b><a name="yslowFile">yslowFile</a>:</b></p>
+        <div>The compiled yslow file.</div>
+        <ul>
+          <li><b>Type</b>: <tt>java.lang.String</tt></li>
+          <li><b>Required</b>: <tt>No</tt></li>
+          <li><b>User Property</b>: <tt>siteSpeed.yslowFile</tt></li>
+          <li><b>Default</b>: <tt>dependencies/yslow-3.1.4-sitespeed.js</tt></li>
+        </ul><hr /><p><b><a name="zip">zip</a>:</b></p>
+        <div>Create a tar zip file of the result files.</div>
+        <ul>
+          <li><b>Type</b>: <tt>boolean</tt></li>
+          <li><b>Required</b>: <tt>No</tt></li>
+          <li><b>User Property</b>: <tt>siteSpeed.zip</tt></li>
+          <li><b>Default</b>: <tt>false</tt></li>
         </ul>
       </div>
     </div>
