@@ -1,0 +1,211 @@
+#*
+ *     Licensed under the Apache License, Version 2.0 (the "License");
+ *     you may not use this file except in compliance with the License.
+ *     You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *     Unless required by applicable law or agreed to in writing, software
+ *     distributed under the License is distributed on an "AS IS" BASIS,
+ *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *     See the License for the specific language governing permissions and
+ *     limitations under the License.
+ *#
+
+## Collecting data needed for the summary page
+
+#set($nrOfPages = $document.getRootElement().getChildren("results").size())
+
+
+## Get the total objects
+    
+#set($nrOfDecimals = 0)
+#set($totalSpofPages = 0)
+
+
+## Creating all statistics objects
+#set($statsJs = $stats.copy())
+#set($statsCss = $stats.copy())
+#set($statsImages = $stats.copy())
+#set($statsCssImages = $stats.copy())
+#set($statsRequests = $stats.copy())
+#set($statsRequestsCached = $stats.copy())
+#set($statsPageWeight = $stats.copy())
+#set($statsScore = $stats.copy())
+#set($statsDocumentWeight = $stats.copy())
+#set($statsSpof = $stats.copy())
+#set($statsJsSyncInHead = $stats.copy())
+#set($statsAssetsWithoutFarExpires = $stats.copy())
+#set($statsCriticalPath = $stats.copy())
+#set($statsTextContent = $stats.copy())
+#set($statsTTFB = $stats.copy())
+#set($statsBackend = $stats.copy())
+#set($statsFrontend = $stats.copy())
+#set($statsTimeSinceLastModificationInSeconds = $stats.copy())
+#set($statsAssetCacheTimeInSeconds = $stats.copy())
+
+#foreach ($results in $document.getRootElement().getChildren())
+    
+    #if($!{results.getChild("stats").getChild("js").getChild("r")})
+        $statsJs.addValue($math.toInteger($results.getChild("stats").getChild("js").getChild("r").getValue()))
+    #end   
+      
+    #if($!{results.getChild("stats").getChild("css").getChild("r")})
+        $statsCss.addValue($math.toInteger($results.getChild("stats").getChild("css").getChild("r").getValue()))
+    #end
+
+    #if($!{results.getChild("stats").getChild("cssimage").getChild("r")})
+        $statsCssImages.addValue($math.toInteger($results.getChild("stats").getChild("cssimage").getChild("r").getValue()))
+    #end
+
+    #if($!{results.getChild("stats").getChild("image").getChild("r")})
+        $statsImages.addValue($math.toInteger($results.getChild("stats").getChild("image").getChild("r").getValue()))
+    #end
+
+    #if($!{results.getChild("r")})
+         $statsRequests.addValue($math.toInteger($results.getChild("r").getValue()))
+    #end
+
+    #if($!{results.getChild("r_c")})
+        #set ($requestsCached = $math.toInteger($results.getChild("r_c").getValue()))
+        ## If one is favicon, remove it because of the favicon cache bug
+        #if ($math.toInteger($results.getChild("stats").getChild("favicon").getChild("r").getValue()) > 0)
+            #set ($requestsCached = $math.sub($requestsCached, $results.getChild("stats").getChild("favicon").getChild("r").getValue()))
+        #end
+        $statsRequestsCached.addValue($requestsCached)
+
+    #end
+      
+    #if($!{results.getChild("w")})
+        $statsPageWeight.addValue($math.toInteger($results.getChild("w").getValue()))
+    #end
+
+    #if($!{results.getChild("o")})
+        $statsScore.addValue($math.toInteger($results.getChild("o").getValue()))
+    #end
+
+    #if($!{results.getChild("stats").getChild("doc").getChild("w")})
+        $statsDocumentWeight.addValue($math.toInteger($results.getAttribute("size").getValue()))
+    #end
+
+
+    #if($!{results.getChild("g").getChild("spof").getChild("score")})
+	   #if ($results.getChild("g").getChild("spof").getChild("score").getValue() != 100)
+	       #set ($totalSpofPages = $math.add($totalSpofPages, 1))
+           $statsSpof.addValue($math.toInteger($results.getChild("g").getChild("spof").getChild("components").getChildren("item").size()))
+       #else
+        $statsSpof.addValue(0)    
+       #end       
+    #end
+
+
+    #if($!{results.getChild("g").getChild("criticalpath").getChild("score")})
+           $statsCriticalPath.addValue($math.toInteger($results.getChild("g").getChild("criticalpath").getChild("score").getValue()))
+    #end
+
+    #if($!{results.getChild("g").getChild("textcontent").getChild("score")})
+           $statsTextContent.addValue($math.toDouble($results.getChild("g").getChild("textcontent").getChild("components").getChildText("item")))
+    #end
+
+    #if($!{results.getChild("g").getChild("syncjsinhead").getChild("components")})
+     $statsJsSyncInHead.addValue($math.toInteger($results.getChild("g").getChild("syncjsinhead").getChild("components").getChildren("item").size()))
+    #end
+
+
+    #if($!{results.getChild("g").getChild("expiresmod").getChild("components")})
+     $statsAssetsWithoutFarExpires.addValue($math.toInteger($results.getChild("g").getChild("expiresmod").getChild("components").getChildren("item").size()))
+    #end
+
+    #if($!{results.getAttribute("ttfb")})
+     	$statsTTFB.addValue($math.toDouble($results.getAttribute("ttfb").getValue()))
+		$statsBackend.addValue($math.roundTo(3,$math.mul($math.div($math.toDouble($results.getAttribute("ttfb").getValue()),$math.div($math.toDouble($results.getChild("lt").getValue()),1000)),100)))
+		$statsFrontend.addValue($math.roundTo(3,$math.mul($math.div($math.sub($math.div($math.toDouble($results.getChild("lt").getValue()),1000),$math.toDouble($results.getAttribute("ttfb").getValue())),$math.div($math.toDouble($results.getChild("lt").getValue()),1000)),100)))
+    #end
+
+	## also fetch the modified since & cache time
+	#foreach ($asset in $results.getChild("comps").getChildren())
+		
+		## set default values
+		#set ($lastMod = "")
+		#set ($date = "")
+		#set ($cacheControl = 0)
+		#set ($expires = "")
+		
+		## fetch the real once
+		#set ($lastMod = $asset.getChild("headers").getChild("response").getChild("Last-Modified").getValue())
+		#set ($date = $asset.getChild("headers").getChild("response").getChild("Date").getValue())
+		#set ($cacheControl = $asset.getChild("headers").getChild("response").getChild("Cache-Control").getValue())
+		#set ($expires = $asset.getChild("headers").getChild("response").getChild("Expires").getValue())
+					
+		#set ($delta = $header.getDelta($lastMod,$date))
+		#if ($delta=="" || ! $delta)
+			## unknown skip it for now
+		#else
+			$statsTimeSinceLastModificationInSeconds.addValue($delta.getSeconds())
+		#end	
+		
+		#set ($cacheTime = $header.getCacheTime($cacheControl, $expires, $date))
+		#if ($cacheTime=="" || !$cacheTime)
+			$statsAssetCacheTimeInSeconds.addValue(0)
+		#else	
+			$statsAssetCacheTimeInSeconds.addValue($cacheTime.getSeconds())
+		#end
+		
+	#end
+	
+#end
+
+##  Create averages   
+#set ($scoreAverage = $math.roundTo($nrOfDecimals,$statsScore.getMean()))   
+#set ($jsAverage = $math.roundTo($nrOfDecimals,$statsJs.getMean()))  
+#set ($requestAverage = $math.roundTo($nrOfDecimals,$statsRequests.getMean()))  
+#set ($cssAverage = $math.roundTo($nrOfDecimals,$statsCss.getMean()))  
+#set ($cssImageAverage = $math.roundTo($nrOfDecimals,$statsCssImages.getMean()))  
+#set ($imageAverage = $math.roundTo($nrOfDecimals,$statsImages.getMean()))
+#set ($requestPrimedAverage = $math.roundTo($nrOfDecimals,$statsRequestsCached.getMean()))  
+#set ($pageWeightAverage = $math.roundTo($nrOfDecimals,$statsPageWeight.getMean()))  
+#set ($totalDocumentWeightAverage = $math.roundTo($nrOfDecimals,$statsDocumentWeight.getMean()))  
+#set ($totalJsSyncInHeadAverage = $math.roundTo($nrOfDecimals,$statsJsSyncInHead.getMean()))  
+#set ($totalSpofAverage = $math.roundTo($nrOfDecimals,$statsSpof.getMean()))  
+#set ($totalAssetsWithoutFarExpiresAverage = $math.roundTo($nrOfDecimals,$statsAssetsWithoutFarExpires.getMean())) 
+#set ($totalCriticalPathAverage = $math.roundTo($nrOfDecimals,$statsCriticalPath.getMean())) 
+#set ($textContentAverage = $math.roundTo($nrOfDecimals,$statsTextContent.getMean())) 
+#set ($ttfbAverage = $math.roundTo(3,$statsTTFB.getMean()))
+#set ($frontendAveragePercentage = $math.roundTo(1,$statsFrontend.getMean()))
+#set ($backendAveragePercentage = $math.roundTo(1,$statsBackend.getMean()))
+
+## Create median
+#set ($scoreMedian = $math.toInteger($statsScore.getPercentile(50)))   
+#set ($jsMedian = $math.toInteger($statsJs.getPercentile(50)))  
+#set ($requestMedian = $math.toInteger($statsRequests.getPercentile(50))) 
+#set ($cssMedian = $math.toInteger($statsCss.getPercentile(50))) 
+#set ($cssImageMedian = $math.toInteger($statsCssImages.getPercentile(50))) 
+#set ($imageMedian = $math.toInteger($statsImages.getPercentile(50))) 
+#set ($requestPrimedMedian = $math.toInteger($statsRequestsCached.getPercentile(50))) 
+#set ($pageWeightMedian = $math.toInteger($statsPageWeight.getPercentile(50))) 
+#set ($documentWeightMedian = $math.toInteger($statsDocumentWeight.getPercentile(50))) 
+#set ($jsSyncInHeadMedian = $math.toInteger($statsJsSyncInHead.getPercentile(50))) 
+#set ($spofMedian = $math.toInteger($statsSpof.getPercentile(50))) 
+#set ($assetsWithoutFarExpiresMedian = $math.toInteger($statsAssetsWithoutFarExpires.getPercentile(50))) 
+#set ($criticalPathMedian = $math.toInteger($statsCriticalPath.getPercentile(50))) 
+#set ($textContentMedian = $math.roundTo(1,$statsTextContent.getPercentile(50)))
+#set ($ttfbMedian = $math.roundTo(3,$statsTTFB.getPercentile(50)))
+#set ($backendMedianPercentage = $math.roundTo(1,$statsBackend.getPercentile(50)))
+#set ($frontendMedianPercentage = $math.roundTo(1,$statsFrontend.getPercentile(50)))
+
+## Set percentage
+#set ($pagesWithSpofPercentage = $math.roundTo($nrOfDecimals, $math.mul($math.div($totalSpofPages,$nrOfPages),100)))
+#set ($requestWithoutFarExpirePercentage = $math.roundTo($nrOfDecimals,$math.mul($math.div($totalAssetsWithoutFarExpiresAverage,$requestAverage),100)))
+#set ($requestWithPrimedCachePercentage = $math.roundTo($nrOfDecimals,$math.mul($math.div($requestPrimedAverage,$requestAverage),100)))
+#set ($imagesPercentage = $math.roundTo($nrOfDecimals,$math.mul($math.div($imageAverage,$requestAverage),100)))
+#set ($cssImagesPercentage = $math.roundTo($nrOfDecimals,$math.mul($math.div($cssImageAverage,$requestAverage),100)))
+#set ($cssPercentage = $math.roundTo($nrOfDecimals,$math.mul($math.div($cssAverage,$requestAverage),100)))
+#set ($jsPercentage = $math.roundTo($nrOfDecimals,$math.mul($math.div($jsAverage,$requestAverage),100)))
+#set ($jsInHeadPercentage = $math.roundTo($nrOfDecimals,$math.mul($math.div($totalJsSyncInHeadAverage,$jsAverage),100))) 
+
+#set ($cacheTimeAverage = $header.getSeconds($math.toInteger($statsAssetCacheTimeInSeconds.getMean())))
+#set ($cacheTimeMedian = $header.getSeconds($math.toInteger($statsAssetCacheTimeInSeconds.getPercentile(50))))
+#set ($modifiedSinceAverage = $header.getSeconds($math.toInteger($statsTimeSinceLastModificationInSeconds.getMean())))
+#set ($modifiedSinceMedian = $header.getSeconds($math.toInteger($statsTimeSinceLastModificationInSeconds.getPercentile(50))))
+
+							

@@ -13,12 +13,10 @@
  */
 package ch.ledcom.maven.sitespeed;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URL;
-import java.util.List;
+import java.util.Properties;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -26,9 +24,11 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
-import com.google.common.io.Closeables;
+import ch.ledcom.maven.sitespeed.guice.SiteSpeedModule;
+
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.soulgalore.crawler.guice.CrawlModule;
 
 /**
  * Generate a SiteSpeed.io report.
@@ -43,24 +43,20 @@ public class SiteSpeedMojo extends AbstractMojo {
 
     private static final String PROPERTY_PREFIX = "siteSpeed";
 
-    /** Path to the SiteSpeed.io directory. */
-    @Parameter(property = PROPERTY_PREFIX + ".siteSpeedPath", required = true)
-    private File siteSpeedPath;
-
-    /** Path to the PhantomJS directory. */
-    @Parameter(property = PROPERTY_PREFIX + ".phantomJSPath", required = true)
+    /** Path to the PhantomJS binary. */
+    @Parameter(property = Configuration.PHANTOM_JS, required = true)
     private File phantomJSPath;
 
     /** The start url for the test. */
-    @Parameter(property = PROPERTY_PREFIX + ".url", required = true)
+    @Parameter(property = Configuration.URL, required = true)
     private URL url;
 
     /** Crawl depth, default is 1. */
-    @Parameter(property = PROPERTY_PREFIX + ".crawlDepth", required = false, defaultValue = "1")
+    @Parameter(property = Configuration.CRAWL_DEPTH, required = false, defaultValue = "1")
     private int crawlDepth;
 
     /** Skip urls that contains this in the path. */
-    @Parameter(property = PROPERTY_PREFIX + ".skipUrls", required = false)
+    @Parameter(property = Configuration.SKIP_URLS, required = false, defaultValue = "")
     private String skipUrls;
 
     /** The number of processes that will analyze pages. */
@@ -101,11 +97,15 @@ public class SiteSpeedMojo extends AbstractMojo {
 
     /** The compiled yslow file. */
     @Parameter(property = PROPERTY_PREFIX + ".yslowFile", required = false, defaultValue = "dependencies/yslow-3.1.4-sitespeed.js")
-    private String yslowFile;
+    private File yslowFile;
 
     /** Which ruleset to use, default is the latest sitespeed.io version. */
-    @Parameter(property = PROPERTY_PREFIX + ".rulesetVersion", required = false)
+    @Parameter(property = PROPERTY_PREFIX + ".rulesetVersion", required = false, defaultValue = "")
     private String rulesetVersion;
+
+    /** Verify URLs ? */
+    @Parameter(property = PROPERTY_PREFIX + ".verifyUrl", required = false, defaultValue = "false")
+    private boolean verifyUrl;
 
     /**
      * Main Mojo method.
@@ -119,44 +119,41 @@ public class SiteSpeedMojo extends AbstractMojo {
     public final void execute() throws MojoExecutionException,
             MojoFailureException {
         logParameters();
-        BufferedReader reader = null;
-        boolean threw = true;
+
+        Properties mergerProperties = new Properties();
         try {
-            ProcessBuilder pb = new ProcessBuilder(constructCmdarray());
-            pb.directory(siteSpeedPath);
-            enrichEnvironment(pb);
-            pb.redirectErrorStream(true);
-            Process p = pb.start();
-            reader = new BufferedReader(new InputStreamReader(
-                    p.getInputStream()));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                getLog().info(line);
-            }
-            int status = p.waitFor();
-            if (status != 0) {
-                throw new MojoExecutionException(
-                        "sitespeed.io exited with status [" + status + "]");
-            }
-            threw = false;
-        } catch (IOException ioe) {
-            throw new MojoExecutionException(
-                    "IOException when generating report", ioe);
-        } catch (InterruptedException ie) {
-            throw new MojoExecutionException(
-                    "InterruptedException when generating report", ie);
-        } finally {
-            try {
-                Closeables.close(reader, threw);
-            } catch (IOException ioe) {
-                throw new MojoExecutionException(
-                        "IOException when closing process input stream", ioe);
-            }
+            mergerProperties.load(this.getClass().getClassLoader()
+                    .getResourceAsStream("merger.properties"));
+
+            Injector injector = Guice.createInjector( //
+                    new SiteSpeedModule( //
+                            phantomJSPath, //
+                            yslowFile, //
+                            verifyUrl, //
+                            crawlDepth, //
+                            "", //
+                            "", //
+                            proxy, //
+                            proxyType, //
+                            "", //
+                            "", //
+                            "/report/velocity/page.vm", //
+                            userAgent, //
+                            viewport, //
+                            url, //
+                            mergerProperties, //
+                            outputDir, //
+                            getLog()), //
+                    new CrawlModule());
+            SiteSpeedOrchestrator orchestrator = injector
+                    .getInstance(SiteSpeedOrchestrator.class);
+            orchestrator.siteSpeed();
+        } catch (IOException e) {
+            throw new MojoExecutionException("Could not execute sitespeed.", e);
         }
     }
 
     private void logParameters() {
-        getLog().info("siteSpeedPath=[" + siteSpeedPath + "]");
         getLog().info("phantomJSPath=[" + phantomJSPath + "]");
         getLog().info("url=[" + url.toExternalForm() + "]");
         getLog().info("crawlDepth=[" + crawlDepth + "]");
@@ -174,64 +171,4 @@ public class SiteSpeedMojo extends AbstractMojo {
         getLog().info("rulesetVersion=[" + rulesetVersion + "]");
     }
 
-    private void enrichEnvironment(ProcessBuilder pb) {
-        final String currentPath = pb.environment().get("PATH");
-        pb.environment().put("PATH", getPhantomJSBinDir() + ":" + currentPath);
-    }
-
-    /**
-     * Construct the sitespeed.io command.
-     * 
-     * @return the command to run (including arguments)
-     */
-    private List<String> constructCmdarray() {
-        ImmutableList.Builder<String> builder = ImmutableList
-                .<String> builder();
-        builder.add(getSiteSpeedBin().toString());
-        builder.add("-u").add(url.toExternalForm());
-        builder.add("-d").add(Integer.toString(crawlDepth));
-        if (!Strings.isNullOrEmpty(skipUrls)) {
-            builder.add("-f").add(skipUrls);
-        }
-        builder.add("-p").add(Integer.toString(nbProcesses));
-        builder.add("-m").add(Integer.toString(maxHeap));
-        if (!Strings.isNullOrEmpty(outputFormat)) {
-            builder.add("-o").add(outputFormat);
-        }
-        builder.add("-r").add(outputDir.toString());
-        if (zip) {
-            builder.add("-z");
-        }
-        if (!Strings.isNullOrEmpty(proxy)) {
-            builder.add("-x").add(proxy);
-        }
-        if (!Strings.isNullOrEmpty(proxyType)) {
-            builder.add("-t").add(proxyType);
-        }
-        builder.add("-a").add(userAgent);
-        builder.add("-v").add(viewport);
-        builder.add("-y").add(yslowFile);
-        if (!Strings.isNullOrEmpty(rulesetVersion)) {
-            builder.add("-l").add(rulesetVersion);
-        }
-        return builder.build();
-    }
-
-    /**
-     * Get the <code>bin</code> directory of the PhantomJS distribution.
-     * 
-     * @return the PhantomJS <code>bin</code> directory
-     */
-    private File getPhantomJSBinDir() {
-        return new File(phantomJSPath, "bin");
-    }
-
-    /**
-     * Get the <code>sitespeed.io</code> script.
-     * 
-     * @return the <code>sitespeed.io</code> script
-     */
-    private File getSiteSpeedBin() {
-        return new File(siteSpeedPath, "sitespeed.io");
-    }
 }

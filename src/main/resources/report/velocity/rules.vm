@@ -1,0 +1,51 @@
+#*
+ *     Licensed under the Apache License, Version 2.0 (the "License");
+ *     you may not use this file except in compliance with the License.
+ *     You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *     Unless required by applicable law or agreed to in writing, software
+ *     distributed under the License is distributed on an "AS IS" BASIS,
+ *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *     See the License for the specific language governing permissions and
+ *     limitations under the License.
+ *#
+#parse("report/velocity/header.vm")
+<div class="row-fluid">
+	<div class="span12">
+
+		<h2>
+			The rules
+		</h2>
+
+		<p>
+			The rules are a mashup between classic Yslow rules & new sitespeed.io rules, all are based on performance best practices. The current version of the rules is $document.getRootElement().getChild("i").getValue()
+		</p>
+
+		<table class="table table-condensed table-striped table-bordered" >
+			<thead>
+				<tr>
+					<th>Rule</th>
+					<th>Info</th>
+					<th>Weight</th>
+				</tr>
+				<tbody>
+					#foreach ($rule in $document.getRootElement().getChild("dictionary").getChild("rules").getChildren())
+					<tr>
+						<td class="nobreak-rules">$rule.getChild("name").getValue()</td>
+						<td class="nobreak-rules">$rule.getChild("info").getValue()</td>
+						<td> $rule.getChild("weight").getValue()</td>
+
+					</tr>
+					#end
+				</tbody>
+			</table>
+
+	</div>
+	<!-- span 12 -->
+</div>
+<!-- row -->
+#parse("report/velocity/footer.vm")
+</body>
+</html>
