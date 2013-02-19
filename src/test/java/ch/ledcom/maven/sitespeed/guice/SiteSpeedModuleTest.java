@@ -61,7 +61,6 @@ public class SiteSpeedModuleTest {
         Injector injector = Guice.createInjector( //
                 new SiteSpeedModule( //
                         PHANTOM_JS, //
-                        YSLOW, //
                         VERIFY_URL, //
                         LEVEL, //
                         FOLLOW_PATH, //

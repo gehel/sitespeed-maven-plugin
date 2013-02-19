@@ -95,13 +95,9 @@ public class SiteSpeedMojo extends AbstractMojo {
     @Parameter(property = PROPERTY_PREFIX + ".viewPort", required = false, defaultValue = "1280x800")
     private String viewport;
 
-    /** The compiled yslow file. */
-    @Parameter(property = PROPERTY_PREFIX + ".yslowFile", required = false, defaultValue = "dependencies/yslow-3.1.4-sitespeed.js")
-    private File yslowFile;
-
     /** Which ruleset to use, default is the latest sitespeed.io version. */
-    @Parameter(property = PROPERTY_PREFIX + ".rulesetVersion", required = false, defaultValue = "")
-    private String rulesetVersion;
+    @Parameter(property = PROPERTY_PREFIX + ".ruleset", required = false, defaultValue = "sitespeed.io-1.6")
+    private String ruleset;
 
     /** Verify URLs ? */
     @Parameter(property = PROPERTY_PREFIX + ".verifyUrl", required = false, defaultValue = "false")
@@ -128,7 +124,6 @@ public class SiteSpeedMojo extends AbstractMojo {
             Injector injector = Guice.createInjector( //
                     new SiteSpeedModule( //
                             phantomJSPath, //
-                            yslowFile, //
                             verifyUrl, //
                             crawlDepth, //
                             "", //
@@ -136,7 +131,7 @@ public class SiteSpeedMojo extends AbstractMojo {
                             proxy, //
                             proxyType, //
                             "", //
-                            "", //
+                            ruleset, //
                             "/report/velocity/page.vm", //
                             userAgent, //
                             viewport, //
@@ -145,8 +140,10 @@ public class SiteSpeedMojo extends AbstractMojo {
                             outputDir, //
                             getLog()), //
                     new CrawlModule());
-            SiteSpeedOrchestrator orchestrator = injector
-                    .getInstance(SiteSpeedOrchestrator.class);
+//            SiteSpeedOrchestrator orchestrator = injector
+//                    .getInstance(SiteSpeedOrchestrator.class);
+            SiteSpeedSingleThreadedOrchestrator orchestrator = injector
+                    .getInstance(SiteSpeedSingleThreadedOrchestrator.class);
             orchestrator.siteSpeed();
         } catch (IOException e) {
             throw new MojoExecutionException("Could not execute sitespeed.", e);
@@ -167,8 +164,7 @@ public class SiteSpeedMojo extends AbstractMojo {
         getLog().info("proxyType=[" + proxyType + "]");
         getLog().info("userAgent=[" + userAgent + "]");
         getLog().info("viewport=[" + viewport + "]");
-        getLog().info("yslowFile=[" + yslowFile + "]");
-        getLog().info("rulesetVersion=[" + rulesetVersion + "]");
+        getLog().info("ruleset=[" + ruleset + "]");
     }
 
 }

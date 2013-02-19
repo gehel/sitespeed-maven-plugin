@@ -26,6 +26,7 @@ import org.apache.maven.plugin.logging.Log;
 
 import ch.ledcom.maven.sitespeed.Configuration;
 import ch.ledcom.maven.sitespeed.SiteSpeedOrchestrator;
+import ch.ledcom.maven.sitespeed.SiteSpeedSingleThreadedOrchestrator;
 import ch.ledcom.maven.sitespeed.analyzer.SiteSpeedAnalyzer;
 import ch.ledcom.maven.sitespeed.crawler.SiteSpeedCrawler;
 import ch.ledcom.maven.sitespeed.report.SiteSpeedReporter;
@@ -39,7 +40,6 @@ import com.google.inject.name.Named;
 public class SiteSpeedModule extends AbstractModule {
 
     private final File phantomJS;
-    private final File yslow;
     private final boolean verifyUrl;
     private final int level;
     private final String followPath;
@@ -56,13 +56,12 @@ public class SiteSpeedModule extends AbstractModule {
     private final File outputDir;
     private final Log log;
 
-    public SiteSpeedModule(File phantomJS, File yslow, boolean verifyUrl,
-            int level, String followPath, String noFollowPath,
-            String proxyHost, String proxyType, String requestHeaders,
-            String ruleset, String template, String userAgent, String viewPort,
-            URL startUrl, Properties mergerProperties, File outputDir, Log log) {
+    public SiteSpeedModule(File phantomJS, boolean verifyUrl, int level,
+            String followPath, String noFollowPath, String proxyHost,
+            String proxyType, String requestHeaders, String ruleset,
+            String template, String userAgent, String viewPort, URL startUrl,
+            Properties mergerProperties, File outputDir, Log log) {
         this.phantomJS = phantomJS;
-        this.yslow = yslow;
         this.verifyUrl = verifyUrl;
         this.level = level;
         this.followPath = followPath;
@@ -83,24 +82,17 @@ public class SiteSpeedModule extends AbstractModule {
     @Override
     protected void configure() {
         bind(SiteSpeedOrchestrator.class).in(Singleton.class);
+        bind(SiteSpeedSingleThreadedOrchestrator.class).in(Singleton.class);
         bind(SiteSpeedCrawler.class).in(Singleton.class);
         bind(SiteSpeedAnalyzer.class).in(Singleton.class);
         bind(SiteSpeedReporter.class).in(Singleton.class);
         bind(XMLVelocityMerger.class).in(Singleton.class);
-
-        // merger properties
     }
 
     @Provides
     @Named(Configuration.PHANTOM_JS)
     public File getPhantomJS() {
         return phantomJS;
-    }
-
-    @Provides
-    @Named(Configuration.YSLOW)
-    public File getYslow() {
-        return yslow;
     }
 
     @Provides
@@ -200,7 +192,7 @@ public class SiteSpeedModule extends AbstractModule {
         return new ThreadPoolExecutor(1, 2, 1, TimeUnit.MILLISECONDS,
                 new ArrayBlockingQueue<Runnable>(1), new CallerRunsPolicy());
     }
-    
+
     @Provides
     public Log getLog() {
         return log;

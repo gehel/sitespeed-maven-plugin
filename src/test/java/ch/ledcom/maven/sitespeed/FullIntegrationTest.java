@@ -89,7 +89,6 @@ public class FullIntegrationTest {
         Injector injector = Guice.createInjector( //
                 new SiteSpeedModule( //
                         PHANTOM_JS, //
-                        YSLOW, //
                         VERIFY_URL, //
                         LEVEL, //
                         FOLLOW_PATH, //

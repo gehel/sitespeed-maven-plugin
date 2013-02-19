@@ -13,6 +13,7 @@
  */
 package ch.ledcom.maven.sitespeed.analyzer;
 
+import static ch.ledcom.maven.sitespeed.utils.UrlUtils.safeUrl;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -20,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
+import org.apache.maven.plugin.logging.SystemStreamLog;
 import org.jdom2.Document;
 import org.jdom2.JDOMException;
 import org.junit.After;
@@ -29,19 +31,19 @@ import org.junit.Test;
 import org.xml.sax.SAXParseException;
 
 import ch.ledcom.maven.sitespeed.httpserver.HttpTestServer;
-import ch.ledcom.maven.sitespeed.utils.UrlUtils;
 
-public class PageSpeedAnalyzerTest {
+public class SiteSpeedAnalyzerTest {
 
     private static final String HTTP_CONTENT = "<html><head><title>test title</title></head><body>test body</body></html>";
     private static final String HTTP_PATH = "/test.html";
     private static final int HTTP_PORT = 9099;
 
-    private static final URL HTTP_URL = UrlUtils.safeUrl("http://localhost:"
+    private static final URL HTTP_URL = safeUrl("http://localhost:"
             + HTTP_PORT + HTTP_PATH);
-    private static final URL INVALID_URL = UrlUtils
-            .safeUrl("http://non-existing-website.com/toto");
+    private static final URL INVALID_URL = safeUrl("http://non-existing-website.com/toto");
 
+    private static final URL REAL_URL = safeUrl("http://www.google.com/");
+    
     private HttpTestServer httpServer;
 
     private String proxyHost = "";
@@ -51,14 +53,12 @@ public class PageSpeedAnalyzerTest {
     private String viewport = "1280x800";
     private static final File phantomJS = new File(
             "/home/gehel/dev/sitespeed.io/phantomjs-1.8.1-linux-x86_64/bin/phantomjs");
-    private File yslow = new File(
-            "/home/gehel/dev/sitespeed.io/sitespeed.io/dependencies/yslow-3.1.4-sitespeed.js");
     private SiteSpeedAnalyzer analyzer;
 
     @Before
     public void setUp() throws IOException {
-        analyzer = new SiteSpeedAnalyzer(phantomJS, yslow, proxyHost,
-                proxyType, ruleset, userAgent, viewport);
+        analyzer = new SiteSpeedAnalyzer(new SystemStreamLog(), phantomJS,
+                proxyHost, proxyType, ruleset, userAgent, viewport);
         httpServer = new HttpTestServer(HTTP_PORT, HTTP_PATH, HTTP_CONTENT);
         httpServer.start();
     }
@@ -72,11 +72,20 @@ public class PageSpeedAnalyzerTest {
         assertEquals("results", doc.getRootElement().getName());
     }
 
+    @Test
+    public void analyzeRealPage() throws IOException, JDOMException,
+            InterruptedException {
+        Document doc = analyzer.analyze(REAL_URL);
+        assertNotNull("Analyzer returned null document", doc);
+        // we only care that there are results, not what they are
+        assertEquals("results", doc.getRootElement().getName());
+    }
+
     @Test(expected = IOException.class)
     public void crashIfPhantomJSDoesNotExist() throws IOException,
             JDOMException, InterruptedException {
-        analyzer = new SiteSpeedAnalyzer(new File(""), yslow, proxyHost,
-                proxyType, ruleset, userAgent, viewport);
+        analyzer = new SiteSpeedAnalyzer(new SystemStreamLog(), new File(""),
+                proxyHost, proxyType, ruleset, userAgent, viewport);
         analyzer.analyze(HTTP_URL);
     }
 
@@ -84,8 +93,8 @@ public class PageSpeedAnalyzerTest {
     @Test(expected = SAXParseException.class)
     public void crashIfYSlowDoesNotExist() throws IOException, JDOMException,
             InterruptedException {
-        analyzer = new SiteSpeedAnalyzer(phantomJS, new File(""), proxyHost,
-                proxyType, ruleset, userAgent, viewport);
+        analyzer = new SiteSpeedAnalyzer(new SystemStreamLog(), phantomJS,
+                proxyHost, proxyType, ruleset, userAgent, viewport);
         analyzer.analyze(HTTP_URL);
     }
 

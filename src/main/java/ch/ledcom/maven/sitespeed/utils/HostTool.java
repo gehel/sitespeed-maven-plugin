@@ -22,6 +22,9 @@ import java.net.URL;
  */
 public final class HostTool {
 
+    public HostTool() {
+    }
+    
     /**
      * Get the host from an url. If the url is malformed, an empty String is
      * returned.

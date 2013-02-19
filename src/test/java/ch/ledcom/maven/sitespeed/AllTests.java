@@ -17,14 +17,14 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
-import ch.ledcom.maven.sitespeed.analyzer.PageSpeedAnalyzerTest;
+import ch.ledcom.maven.sitespeed.analyzer.SiteSpeedAnalyzerTest;
 import ch.ledcom.maven.sitespeed.crawler.SiteSpeedCrawlerTest;
 import ch.ledcom.maven.sitespeed.guice.SiteSpeedModuleTest;
 import ch.ledcom.maven.sitespeed.report.SiteSpeedReporterTest;
 import ch.ledcom.maven.sitespeed.report.XMLVelocityMergerTest;
 
 @RunWith(Suite.class)
-@SuiteClasses({ SiteSpeedOrchestratorTest.class, PageSpeedAnalyzerTest.class,
+@SuiteClasses({ SiteSpeedOrchestratorTest.class, SiteSpeedAnalyzerTest.class,
         SiteSpeedCrawlerTest.class, SiteSpeedModuleTest.class,
         SiteSpeedReporterTest.class, XMLVelocityMergerTest.class,
         FullIntegrationTest.class })

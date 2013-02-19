@@ -99,6 +99,8 @@ public class SiteSpeedOrchestrator {
                                 log.info("Creating report for URL ["
                                         + url.toExternalForm() + "]");
                                 Document doc = documentFuture.get();
+                                log.info("Document to report for URL ["
+                                        + url.toExternalForm() + "]");
                                 log.debug(XmlPrettyPrinter.prettyPrint(doc));
                                 reporter.report(doc, out);
                                 threw = false;
